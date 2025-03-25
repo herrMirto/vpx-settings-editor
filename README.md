@@ -12,7 +12,7 @@ Some of the configuration tabs(VR/Editor/Global) are there just because it was e
 
 ## Installing
 
-Download the latest build from the Releases page, extract it and copy to your $HOME/bin or any directory that's part of you $PATH variable.
+Download the latest build from the Releases page [https://github.com/herrMirto/vpx-settings-editor/releases/](https://github.com/herrMirto/vpx-settings-editor/releases/), extract it and copy to your $HOME/bin or any directory that's part of you $PATH variable.
 
 ### MacOS
 
