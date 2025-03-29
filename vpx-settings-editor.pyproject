@@ -1,0 +1,23 @@
+{
+    "files": [
+        "assets_rc.py",
+        "config_utils.py",
+        "main.py",
+        "form.ui",
+        "tooltips.py",
+        "ui_form.py",
+        "utils.py",
+        "ui_helpers/setup_windowed_resolutions.py",
+        "ui_helpers/stereo_3d.py",
+        "ui_helpers/video_resolutions.py",
+        "ui/audio_options.py",
+        "ui/buttons_options.py",
+        "ui/editor_options.py",
+        "ui/global_options.py",
+        "ui/nudge_and_dof_options.py",
+        "ui/pup_options.py",
+        "ui/screens_options.py",
+        "ui/video_options.py",
+        "ui/vr_options.py"
+    ]
+}
