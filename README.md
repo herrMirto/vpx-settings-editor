@@ -22,7 +22,6 @@ After extracting the archive you will have to remove the quarantine flag through
 xattr -d com.apple.quarantine vpx-settings-editor
 ```
 
-
 Create the configuration file $HOME/.config/vpx_settings_editor.cfg with the following content:
 
 ```
@@ -32,6 +31,54 @@ vpx_ini_path = /home/user/.vpinball/VPinballX.ini
 ```
 
 * Make a backup of your VPinballX.ini file first.
+
+## Python Development
+
+The application uses Python3.12
+
+Start creating a virtual environment and installing the dependencies:
+
+## Clone the repo
+```
+git clone https://github.com/herrMirto/vpx-settings-editor.git
+```
+
+## Create the virtual environment
+```
+python -m venv ~/.vpx_settings_dev
+source ~/.vpx_settings_dev/bin/activate
+pip install -r requirements.txt
+```
+
+## Start the app
+```
+cd vpx-settings-editor/
+python main.py
+```
+
+- The GUI is defined on the ui_form.py file
+
+## QT Creator Development[WIP] - Version 16
+
+### MacOS Installation
+
+```
+brew install qt-creator
+```
+
+### Ubuntu Linux Installation
+
+Download the official release from [https://github.com/qt-creator/qt-creator/releases/download/v16.0.0/qtcreator-linux-x64-16.0.0.deb](https://github.com/qt-creator/qt-creator/releases/download/v16.0.0/qtcreator-linux-x64-16.0.0.deb)
+
+```
+## install 
+sudo dpkg -i qtcreator-linux-x64-16.0.0.deb
+
+## run
+/opt/qt-creator/bin/qtcreator
+```
+
+Open the vpx-settings-editor.pyproject on QT Creator and follow the instructions to configure the Python environment.
 
 ## Sections
 
