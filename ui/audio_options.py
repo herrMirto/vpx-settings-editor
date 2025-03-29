@@ -44,7 +44,7 @@ def load_audio_config(main_window):
                 widget.setCurrentText(value) if value else None
             elif isinstance(widget, QSlider):
                 if not value:
-                    value = 0
+                    value = 100
                 widget.setValue(int(value))
             elif isinstance(widget, QLineEdit):
                 widget.setText(value)
@@ -52,8 +52,8 @@ def load_audio_config(main_window):
 
 
     # Atualiza os labels com os valores corretos
-    main_window.ui.playfld_snd_label.setText(str(ini.get_section_subset("Player", ["MusicVolume"]).get("MusicVolume", "0")))
-    main_window.ui.backglass_snd_label.setText(str(ini.get_section_subset("Player", ["SoundVolume"]).get("SoundVolume", "0")))
+    main_window.ui.LabelSoundVolumeNumber.setText(str(ini.get_section_subset("Player", ["SoundVolume"]).get("SoundVolume", "100")))
+    main_window.ui.LabelMusicVolumeNumber.setText(str(ini.get_section_subset("Player", ["MusicVolume"]).get("MusicVolume", "100")))
 
     logger.info("=== Audio Options loaded ===")
 
