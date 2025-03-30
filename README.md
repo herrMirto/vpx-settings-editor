@@ -56,6 +56,14 @@ cd vpx-settings-editor/
 python main.py
 ```
 
+## Checking version
+
+```
+python main.py --version
+```
+
+- The app version is also shown inside the GUI
+
 - The GUI is defined on the ui_form.py file
 
 ## QT Creator Development[WIP] - Version 16
