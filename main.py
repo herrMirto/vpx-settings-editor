@@ -9,6 +9,7 @@ from PySide6.QtGui import QIcon
 from utils import logger
 from tooltips import TOOLTIPS,apply_tooltips
 from config.vpinball_bin import VPinballBin
+from version import __version__
 
 # Important:
 # You need to run the following command to generate the ui_form.py file
@@ -174,7 +175,7 @@ class Widget(QWidget):
 
         # Tooltips
         apply_tooltips(self, TOOLTIPS)
-
+        self.ui.LabelAppVersion.setText(f"App version: {__version__}")
 
     def toggleWidgets(self):
         if self.ui.radio_Fullscreen.isChecked():
@@ -238,6 +239,10 @@ class Widget(QWidget):
     
 
 if __name__ == "__main__":
+    if "--version" in sys.argv:
+        print(f"vpx-settings-editor {__version__}")
+        sys.exit(0)
+
     app = QApplication(sys.argv)
     widget = Widget()
     widget.show()
