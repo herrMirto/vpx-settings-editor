@@ -25,7 +25,7 @@ from ui.nudge_and_dof_options import load_nudge_dof_options, save_nudge_dof_opti
 from ui.pup_options import load_pup_options, on_save_pup_clicked
 from ui.screens_options import load_screen_options, on_save_screen_clicked
 from ui.video_options import save_video_options, load_video_options
-from ui.vr_options import load_vr_options, save_vr_options
+from ui.vr_options import load_vr_options, on_save_vr_clicked
 from ui_helpers.stereo_3d import setup_stereo3d_logic
 from ui_helpers.setup_windowed_resolutions import setup_aspect_ratio_logic, get_playfield_mode
 from ui_helpers.video_resolutions import get_display_resolutions, load_playfield_resolution
@@ -165,7 +165,7 @@ class Widget(QWidget):
 
         # Save VR config button
         self.ButtonSaveVROptions = self.ui.ButtonSaveVROptions
-        self.ButtonSaveVROptions.clicked.connect(lambda: save_vr_options(self))
+        self.ButtonSaveVROptions.clicked.connect(lambda: on_save_vr_clicked(self))
 
         self.window_index = get_playfield_mode()
         if self.window_index:
