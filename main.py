@@ -19,16 +19,17 @@ import assets_rc
 from ui_form import Ui_Widget
 from ui.audio_options import load_audio_config, save_audio_options
 from ui.buttons_options import load_buttons_options, save_buttons_options
-from ui.editor_options import change_color, load_editor_options, save_editor_options
-from ui.global_options import load_global_options, save_global_options
+from ui.editor_options import load_editor_options, on_save_editor_clicked
+from ui.global_options import load_global_options, on_save_global_clicked
 from ui.nudge_and_dof_options import load_nudge_dof_options, save_nudge_dof_options
-from ui.pup_options import load_pup_config, save_pup_options
-from ui.screens_options import load_screen_options, save_screen_options
+from ui.pup_options import load_pup_options, on_save_pup_clicked
+from ui.screens_options import load_screen_options, on_save_screen_clicked
 from ui.video_options import save_video_options, load_video_options
 from ui.vr_options import load_vr_options, save_vr_options
 from ui_helpers.stereo_3d import setup_stereo3d_logic
 from ui_helpers.setup_windowed_resolutions import setup_aspect_ratio_logic, get_playfield_mode
 from ui_helpers.video_resolutions import get_display_resolutions, load_playfield_resolution
+from ui_helpers.widget_option_manager import change_color
 
 class Widget(QWidget):
     def __init__(self, parent=None):
@@ -61,7 +62,7 @@ class Widget(QWidget):
         self.buttons_options = load_buttons_options(self)
         self.editor_options = load_editor_options(self)
         self.global_options = load_global_options(self)
-        self.pup_config = load_pup_config(self)
+        self.pup_config = load_pup_options(self)
         self.screen_options = load_screen_options(self)
         self.nudge_options = load_nudge_dof_options(self)
         self.vr_options = load_vr_options(self)
@@ -140,7 +141,7 @@ class Widget(QWidget):
 
         # Save Global Options
         self.ButtonSaveGlobalOptions = self.ui.ButtonSaveGlobalOptions
-        self.ButtonSaveGlobalOptions.clicked.connect(lambda: save_global_options(self))
+        self.ButtonSaveGlobalOptions.clicked.connect(lambda: on_save_global_clicked(self))
 
         # Save Nudge and DOF Options
         self.ButtonSaveNudgeDOFOptions = self.ui.ButtonSaveNudgeDOFOptions
@@ -148,15 +149,15 @@ class Widget(QWidget):
 
          # Save Editor button
         self.ButtonSaveEditorOptions = self.ui.ButtonSaveEditorOptions
-        self.ButtonSaveEditorOptions.clicked.connect(lambda: save_editor_options(self))
+        self.ButtonSaveEditorOptions.clicked.connect(lambda: on_save_editor_clicked(self))
 
         # Save PUP config button
         self.ButtonSavePUPOptions = self.ui.ButtonSavePUPOptions
-        self.ButtonSavePUPOptions.clicked.connect(lambda: save_pup_options(self))
+        self.ButtonSavePUPOptions.clicked.connect(lambda: on_save_pup_clicked(self))
 
         # Save Screen Configurations
         self.SaveScreenOptionsButton = self.ui.SaveScreenOptions_Button
-        self.SaveScreenOptionsButton.clicked.connect(lambda: save_screen_options(self))
+        self.SaveScreenOptionsButton.clicked.connect(lambda: on_save_screen_clicked(self))
 
         # Save Video Options button
         self.ButtonSaveVideoOptions = self.ui.ButtonSaveVideoOptions

@@ -1,6 +1,8 @@
-from PySide6.QtWidgets import QCheckBox, QLineEdit
+# -*- coding: utf-8 -*-
 from config.vpinball_ini import VPinballINI
 from utils import show_save_message, logger
+from ui_helpers.widget_diffs import show_diff_table
+from ui_helpers.widget_option_manager import WidgetOptionManager
 
 ini = VPinballINI()
 
@@ -30,47 +32,24 @@ CHECKBOX_OPTIONS = {
 }
 
 def load_screen_options(main_window):
-    """Load Screens/DMDs options from VPinballX.ini"""
     all_options = {opt for group in SCREEN_OPTIONS.values() for opt in group}
-    values = ini.get_section_subset("Standalone", all_options)
-    
-    for option in all_options:
-        widget = getattr(main_window.ui, option, None)
-        if not widget:
-            continue
-        
-        value = values.get(option, "0")
-        if option in CHECKBOX_OPTIONS and isinstance(widget, QCheckBox):
-            widget.setChecked(value == "1")
-        elif isinstance(widget, QLineEdit):
-            widget.setText(value)
-        logger.info(f"Loading {option}: {value}")
+    manager = WidgetOptionManager(main_window)
+    return manager.load_options("Standalone", all_options, CHECKBOX_OPTIONS)
 
-def save_screen_options(main_window):
-    """Save Screens/DMDs options on VPinballX.ini"""
-    updates = {}
-    
+def prepare_screen_updates(main_window):
     all_options = {opt for group in SCREEN_OPTIONS.values() for opt in group}
-    
-    for option in all_options:
-        widget = getattr(main_window.ui, option, None)
-        if not widget:
-            continue
-        
-        if option in CHECKBOX_OPTIONS and isinstance(widget, QCheckBox):
-            updates[option] = "1" if widget.isChecked() else "0"
-            logger.info(f"Saving {option}: {updates[option]}")
-        elif isinstance(widget, QLineEdit):
-            updates[option] = widget.text()
-            logger.info(f"Saving {option}: {widget.text()}")
+    manager = WidgetOptionManager(main_window)
+    return manager.prepare_updates("Standalone", all_options, CHECKBOX_OPTIONS)
 
-    ini.update_section_subset("Standalone", updates)
-    
-    try:
-        ini.save()
-        logger.info("=== Screen Options saved ===")
-        show_save_message("Screen Options saved")
-    except Exception as e:
-        logger.error(f"Error saving Screen Options: \n {e}")
-        show_save_message("Error saving Screen Options")
-    ini.save()
+def on_save_screen_clicked(main_window):
+    updates = prepare_screen_updates(main_window)
+    if show_diff_table(ini, updates, parent=main_window):
+        for section, values in updates.items():
+            ini.update_section_subset(section, values)
+        try:
+            ini.save()
+            logger.info("=== Screen Options saved ===")
+            show_save_message("Screen Options saved")
+        except Exception as e:
+            logger.error(f"Error saving Screen Options: {e}")
+            show_save_message("Error saving Screen Options")

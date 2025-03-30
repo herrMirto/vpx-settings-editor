@@ -1,8 +1,7 @@
-import re
-from PySide6.QtWidgets import QCheckBox, QComboBox, QLineEdit, QLabel, QColorDialog
-from PySide6.QtGui import QColor, QPalette
+from ui_helpers.widget_option_manager import WidgetOptionManager
+from ui_helpers.widget_diffs import show_diff_table
 from config.vpinball_ini import VPinballINI
-from utils import show_save_message, logger
+from utils import logger, show_save_message
 
 ini = VPinballINI()
 
@@ -27,88 +26,32 @@ DEFAULT_COLORS = {
 }
 
 def load_editor_options(main_window):
-    """Load Editor options from VPinballX.ini"""
-    logger.info("=== Loading Editor Options ===")
-    
-    values = ini.get_section_subset("Editor", EDITOR_OPTIONS)
-    
-    for option in EDITOR_OPTIONS:
-        widget = getattr(main_window.ui, option, None)
-        if not widget:
-            continue
-        
-        value = values.get(option, str(DEFAULTS.get(option, "0")))
-        if isinstance(widget, QCheckBox):
-            widget.setChecked(value == "1")
-            logger.info(f"Loading {option}: {value}")
-        elif isinstance(widget, QComboBox):
-            widget.setCurrentIndex(int(value) if value.isdigit() else 0)
-            logger.info(f"Loading {option}: {value}")
-        elif isinstance(widget, QLineEdit):
-            widget.setText(value)
-            logger.info(f"Loading {option}: {value}")
-        elif isinstance(widget, QLabel) and option in COLOR_LABELS:
-            if not value or value == "0":
-                value = DEFAULT_COLORS[option]
-                logger.info(f"Using default value for {option}: {value}")
-            widget.setStyleSheet(f"background-color: #{value}; border: 1px solid black;")
-            #widget.setAutoFillBackground(True)
-            palette = widget.palette()
-            palette.setColor(QPalette.ColorRole.Window, QColor(f"{value}"))
-            #widget.setPalette(palette)
-            logger.info(f"Loading {option}: {value}")
-    
-    logger.info("=== Editor Options loaded ===")
+    manager = WidgetOptionManager(main_window)
+    return manager.load_options(
+        "Editor",
+        EDITOR_OPTIONS,
+        color_labels=COLOR_LABELS,
+        defaults=DEFAULTS,
+        default_colors=DEFAULT_COLORS
+    )
 
-def save_editor_options(main_window):
-    """Save Editor options on VPinballX.ini"""
-    logger.info("=== Saving Editor Options ===")    
-    updates = {}
-    
-    for option in EDITOR_OPTIONS:
-        widget = getattr(main_window.ui, option, None)
-        if not widget:
-            continue
-        
-        if isinstance(widget, QCheckBox):
-            updates[option] = "1" if widget.isChecked() else "0"
-            logger.info(f"Saving {option}: {updates[option]}")
-        elif isinstance(widget, QComboBox):
-            updates[option] = str(widget.currentIndex())
-            logger.info(f"Saving {option}: {updates[option]}")
-        elif isinstance(widget, QLineEdit):
-            updates[option] = widget.text()
-            logger.info(f"Saving {option}: {updates[option]}")
-        elif isinstance(widget, QLabel) and option in COLOR_LABELS:
-            style = widget.styleSheet()
-            if "background-color:" in style:
-                updates[option] = style.split("background-color:")[-1].split(";")[0].strip().replace("#", "")
-                logger.info(f"Saving {option}: {updates[option]}")
-            else:
-                logger.warning(f"Color not found for Widget {option}. Skipping.")
-    
-    ini.update_section_subset("Editor", updates)
-    try:
-        ini.save()
-        logger.info("=== Editor Options Saved ===")
-        show_save_message("Editor Options Saved")
-    except Exception as e:
-        logger.error(f"Error saving Editor Options: \n {e}")
-        show_save_message("Error saving Editor Options")
+def prepare_editor_updates(main_window):
+    manager = WidgetOptionManager(main_window)
+    return manager.prepare_updates(
+        "Editor",
+        EDITOR_OPTIONS,
+        color_labels=COLOR_LABELS
+    )
 
-
-def change_color(main_window, label_name):
-    """Changes color after clicking on QLabel."""
-    widget = getattr(main_window.ui, label_name, None)
-    if not widget:
-        return
-
-    style = widget.styleSheet()
-    match = re.search(r"background-color:\s*#([0-9A-Fa-f]{6})", style)
-    hex_color = match.group(1) if match else DEFAULT_COLORS.get(label_name, "000000")
-
-    current_color = QColor(f"#{hex_color}")
-    new_color = QColorDialog.getColor(current_color, main_window)
-
-    if new_color.isValid():
-        widget.setStyleSheet(f"background-color: {new_color.name()}; border: 1px solid black;")
+def on_save_editor_clicked(main_window):
+    updates = prepare_editor_updates(main_window)
+    if show_diff_table(ini, updates, parent=main_window):
+        for section, values in updates.items():
+            ini.update_section_subset(section, values)
+        try:
+            ini.save()
+            logger.info("=== Editor Options saved ===")
+            show_save_message("Editor Options saved")
+        except Exception as e:
+            logger.error(f"Error saving Editor Options: {e}")
+            show_save_message("Error saving Editor Options")
