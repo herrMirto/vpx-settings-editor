@@ -1591,7 +1591,7 @@
       </rect>
      </property>
      <property name="title">
-      <string>BGFX Backend</string>
+      <string>Renderer</string>
      </property>
      <property name="flat">
       <bool>false</bool>
@@ -1962,6 +1962,44 @@
       </widget>
      </widget>
     </widget>
+    <widget class="QPushButton" name="ButtonLowEndPC">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>700</y>
+       <width>161</width>
+       <height>32</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Set For Low End PC</string>
+     </property>
+     <property name="icon">
+      <iconset theme="QIcon::ThemeIcon::GoDown"/>
+     </property>
+     <property name="default">
+      <bool>false</bool>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="ButtonHighEndPC">
+     <property name="geometry">
+      <rect>
+       <x>260</x>
+       <y>700</y>
+       <width>161</width>
+       <height>32</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Set For High End PC</string>
+     </property>
+     <property name="icon">
+      <iconset theme="QIcon::ThemeIcon::GoUp"/>
+     </property>
+     <property name="default">
+      <bool>false</bool>
+     </property>
+    </widget>
    </widget>
    <widget class="QWidget" name="NudgeDOF">
     <attribute name="title">
@@ -2302,7 +2340,7 @@
        <rect>
         <x>10</x>
         <y>30</y>
-        <width>451</width>
+        <width>556</width>
         <height>57</height>
        </rect>
       </property>
@@ -3634,7 +3672,7 @@
        <rect>
         <x>10</x>
         <y>30</y>
-        <width>451</width>
+        <width>556</width>
         <height>57</height>
        </rect>
       </property>
@@ -9173,7 +9211,7 @@
      <property name="geometry">
       <rect>
        <x>690</x>
-       <y>130</y>
+       <y>230</y>
        <width>334</width>
        <height>43</height>
       </rect>
@@ -9199,7 +9237,7 @@
      <property name="geometry">
       <rect>
        <x>690</x>
-       <y>190</y>
+       <y>290</y>
        <width>131</width>
        <height>32</height>
       </rect>
@@ -9213,6 +9251,335 @@
      <property name="default">
       <bool>true</bool>
      </property>
+    </widget>
+    <widget class="QWidget" name="gridLayoutWidget_41">
+     <property name="geometry">
+      <rect>
+       <x>690</x>
+       <y>130</y>
+       <width>416</width>
+       <height>87</height>
+      </rect>
+     </property>
+     <layout class="QGridLayout" name="TweakGrid_2">
+      <property name="sizeConstraint">
+       <enum>QLayout::SizeConstraint::SetFixedSize</enum>
+      </property>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="JoyEnable3DKey">
+        <item>
+         <property name="text">
+          <string>(none)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Button1</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Button2</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Button3</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Button4</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Button5</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Button6</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Button7</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Button8</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Button9</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Button10</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Button11</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Button12</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Button13</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Button14</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Button15</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Button16</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Button17</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Button18</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Button19</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Button20</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Button21</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Button22</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Button23</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Button24</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Left Mouse</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Right Mouse</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Middle Mouse</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QComboBox" name="JoyEscapeKey">
+        <item>
+         <property name="text">
+          <string>(none)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Button1</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Button2</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Button3</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Button4</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Button5</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Button6</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Button7</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Button8</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Button9</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Button10</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Button11</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Button12</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Button13</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Button14</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Button15</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Button16</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Button17</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Button18</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Button19</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Button20</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Button21</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Button22</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Button23</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Button24</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Left Mouse</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Right Mouse</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Middle Mouse</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="LabelJoyEscapeKey">
+        <property name="frameShape">
+         <enum>QFrame::Shape::StyledPanel</enum>
+        </property>
+        <property name="text">
+         <string>JoyEscapeKey</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLabel" name="LabelJoyEnable3DKey">
+        <property name="frameShape">
+         <enum>QFrame::Shape::StyledPanel</enum>
+        </property>
+        <property name="text">
+         <string>JoyEnable3DKey</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </widget>
    <widget class="QWidget" name="VR">
@@ -10243,7 +10610,7 @@
        <item row="0" column="1">
         <widget class="QLineEdit" name="PUPTopperScreen">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
          <property name="text">
           <string/>
@@ -10288,42 +10655,42 @@
        <item row="1" column="1">
         <widget class="QLineEdit" name="PUPTopperWindow">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
        <item row="2" column="1">
         <widget class="QLineEdit" name="PUPTopperWindowX">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
        <item row="3" column="1">
         <widget class="QLineEdit" name="PUPTopperWindowY">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
        <item row="4" column="1">
         <widget class="QLineEdit" name="PUPTopperWindowWidth">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
        <item row="5" column="1">
         <widget class="QLineEdit" name="PUPTopperWindowHeight">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
        <item row="6" column="1">
         <widget class="QLineEdit" name="PUPTopperWindowRotation">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -10369,7 +10736,7 @@
        <item row="0" column="1">
         <widget class="QLineEdit" name="PUPBackglassScreen">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
          <property name="text">
           <string/>
@@ -10414,42 +10781,42 @@
        <item row="1" column="1">
         <widget class="QLineEdit" name="PUPBackglassWindow">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
        <item row="2" column="1">
         <widget class="QLineEdit" name="PUPBackglassWindowX">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
        <item row="3" column="1">
         <widget class="QLineEdit" name="PUPBackglassWindowY">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
        <item row="4" column="1">
         <widget class="QLineEdit" name="PUPBackglassWindowWidth">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
        <item row="5" column="1">
         <widget class="QLineEdit" name="PUPBackglassWindowHeight">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
        <item row="6" column="1">
         <widget class="QLineEdit" name="PUPBackglassWindowRotation">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -10495,7 +10862,7 @@
        <item row="0" column="1">
         <widget class="QLineEdit" name="PUPDMDScreen">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -10537,42 +10904,42 @@
        <item row="1" column="1">
         <widget class="QLineEdit" name="PUPDMDWindow">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
        <item row="2" column="1">
         <widget class="QLineEdit" name="PUPDMDWindowX">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
        <item row="3" column="1">
         <widget class="QLineEdit" name="PUPDMDWindowY">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
        <item row="4" column="1">
         <widget class="QLineEdit" name="PUPDMDWindowWidth">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
        <item row="5" column="1">
         <widget class="QLineEdit" name="PUPDMDWindowHeight">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
        <item row="6" column="1">
         <widget class="QLineEdit" name="PUPDMDWindowRotation">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -10618,7 +10985,7 @@
        <item row="0" column="1">
         <widget class="QLineEdit" name="PUPPlayfieldScreen">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -10660,42 +11027,42 @@
        <item row="1" column="1">
         <widget class="QLineEdit" name="PUPPlayfieldWindow">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
        <item row="2" column="1">
         <widget class="QLineEdit" name="PUPPlayfieldWindowX">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
        <item row="3" column="1">
         <widget class="QLineEdit" name="PUPPlayfieldWindowY">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
        <item row="4" column="1">
         <widget class="QLineEdit" name="PUPPlayfieldWindowWidth">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
        <item row="5" column="1">
         <widget class="QLineEdit" name="PUPPlayfieldWindowHeight">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
        <item row="6" column="1">
         <widget class="QLineEdit" name="PUPPlayfieldWindowRotation">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -10741,7 +11108,7 @@
        <item row="0" column="1">
         <widget class="QLineEdit" name="PUPFullDMDScreen">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -10783,42 +11150,42 @@
        <item row="1" column="1">
         <widget class="QLineEdit" name="PUPFullDMDWindow">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
        <item row="2" column="1">
         <widget class="QLineEdit" name="PUPFullDMDWindowX">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
        <item row="3" column="1">
         <widget class="QLineEdit" name="PUPFullDMDWindowY">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
        <item row="4" column="1">
         <widget class="QLineEdit" name="PUPFullDMDWindowWidth">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
        <item row="5" column="1">
         <widget class="QLineEdit" name="PUPFullDMDWindowHeight">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
        <item row="6" column="1">
         <widget class="QLineEdit" name="PUPFullDMDWindowRotation">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -10859,7 +11226,7 @@
       <item row="2" column="1">
        <widget class="QLineEdit" name="PUPWindows">
         <property name="inputMask">
-         <string>999999</string>
+         <string/>
         </property>
         <property name="text">
          <string/>
@@ -10885,6 +11252,25 @@
      </property>
      <property name="default">
       <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="ButtonSetupPUPScreens">
+     <property name="geometry">
+      <rect>
+       <x>320</x>
+       <y>20</y>
+       <width>171</width>
+       <height>32</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Setup Screen Positions</string>
+     </property>
+     <property name="icon">
+      <iconset theme="QIcon::ThemeIcon::Computer"/>
+     </property>
+     <property name="flat">
+      <bool>false</bool>
      </property>
     </widget>
    </widget>
@@ -11698,7 +12084,7 @@
        <item row="1" column="1">
         <widget class="QLineEdit" name="PinMAMEWindowX">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -11719,14 +12105,14 @@
        <item row="2" column="1">
         <widget class="QLineEdit" name="PinMAMEWindowY">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
        <item row="3" column="1">
         <widget class="QLineEdit" name="PinMAMEWindowWidth">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -11740,7 +12126,7 @@
        <item row="0" column="1">
         <widget class="QLineEdit" name="PinMAMEWindow">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
          <property name="text">
           <string/>
@@ -11750,7 +12136,7 @@
        <item row="5" column="1">
         <widget class="QLineEdit" name="PinMAMEWindowRotation">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -11764,7 +12150,7 @@
        <item row="4" column="1">
         <widget class="QLineEdit" name="PinMAMEWindowHeight">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -11810,7 +12196,7 @@
        <item row="1" column="1">
         <widget class="QLineEdit" name="FlexDMDWindowX">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -11831,14 +12217,14 @@
        <item row="2" column="1">
         <widget class="QLineEdit" name="FlexDMDWindowY">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
        <item row="3" column="1">
         <widget class="QLineEdit" name="FlexDMDWindowWidth">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -11852,7 +12238,7 @@
        <item row="0" column="1">
         <widget class="QLineEdit" name="FlexDMDWindow">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
          <property name="text">
           <string/>
@@ -11862,7 +12248,7 @@
        <item row="5" column="1">
         <widget class="QLineEdit" name="FlexDMDWindowRotation">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -11876,7 +12262,7 @@
        <item row="4" column="1">
         <widget class="QLineEdit" name="FlexDMDWindowHeight">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -11922,7 +12308,7 @@
        <item row="1" column="1">
         <widget class="QLineEdit" name="B2SBackglassX">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -11943,14 +12329,14 @@
        <item row="2" column="1">
         <widget class="QLineEdit" name="B2SBackglassY">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
        <item row="3" column="1">
         <widget class="QLineEdit" name="B2SBackglassWidth">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -11964,7 +12350,7 @@
        <item row="0" column="1">
         <widget class="QLineEdit" name="B2SWindows">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
          <property name="text">
           <string/>
@@ -11974,7 +12360,7 @@
        <item row="5" column="1">
         <widget class="QLineEdit" name="B2SBackglassRotation">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -11988,7 +12374,7 @@
        <item row="4" column="1">
         <widget class="QLineEdit" name="B2SBackglassHeight">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -12034,7 +12420,7 @@
        <item row="4" column="1">
         <widget class="QLineEdit" name="B2SDMDRotation">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -12048,7 +12434,7 @@
        <item row="2" column="1">
         <widget class="QLineEdit" name="B2SDMDWidth">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -12076,7 +12462,7 @@
        <item row="3" column="1">
         <widget class="QLineEdit" name="B2SDMDHeight">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -12090,7 +12476,7 @@
        <item row="0" column="1">
         <widget class="QLineEdit" name="B2SDMDX">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
          <property name="text">
           <string/>
@@ -12100,7 +12486,7 @@
        <item row="1" column="1">
         <widget class="QLineEdit" name="B2SDMDY">
          <property name="inputMask">
-          <string>999999</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -12255,6 +12641,25 @@
      </property>
      <property name="default">
       <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="ButtonSetupScreens">
+     <property name="geometry">
+      <rect>
+       <x>470</x>
+       <y>50</y>
+       <width>171</width>
+       <height>32</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Setup Screen Positions</string>
+     </property>
+     <property name="icon">
+      <iconset theme="QIcon::ThemeIcon::Computer"/>
+     </property>
+     <property name="flat">
+      <bool>false</bool>
      </property>
     </widget>
    </widget>

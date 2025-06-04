@@ -1,6 +1,11 @@
-from PySide6.QtWidgets import QCheckBox, QComboBox
+"""
+Manages the buttons options
+"""
+
+from ui_helpers.widget_option_manager import WidgetOptionManager
+from ui_helpers.widget_diffs import show_diff_table
 from config.vpinball_ini import VPinballINI
-from utils import show_save_message, logger
+from utils import logger, show_save_message
 
 ini = VPinballINI()
 
@@ -31,56 +36,43 @@ DEFAULTS = {
     "JoyLockbarKey": 0,
     "JoyPauseKey": 0,
     "JoyTweakKey": 0,
+    "JoyEscapeKey": 0,
+    "JoyEnable3DKey": 0,
     "DisableESC": 0,
     "PBWDefaultLayout": 0
 }
 
+BUTTONS_OPTIONS = list(DEFAULTS.keys())
+CHECKBOX_OPTIONS = {
+    "DisableESC",
+    "PBWDefaultLayout"
+}
 
+def load_buttons_options(main_window): 
+    manager = WidgetOptionManager(main_window)
+    return manager.load_options(
+        "Player",
+        BUTTONS_OPTIONS,
+        checkbox_options=CHECKBOX_OPTIONS,
+        defaults=DEFAULTS
+    )
 
-def load_buttons_options(main_window):
-    """Load Buttons options from VPinballX.ini"""
-    logger.info("=== Loading Buttons Options ===")
-    
-    widgets = {option: getattr(main_window.ui, option, None) for option in DEFAULTS.keys()}
-    values = ini.get_section_subset("Player", DEFAULTS.keys())
-    
-    for key, widget in widgets.items():
-        if not widget:
-            logger.warning(f"Widget {key} not found in UI")
-            continue
-        
-        value = values.get(key, str(DEFAULTS[key]))
-        if isinstance(widget, QCheckBox):
-            widget.setChecked(value == "1")
-        elif isinstance(widget, QComboBox):
-            widget.setCurrentIndex(int(value) if value.isdigit() else 0)
-        logger.info(f"Loading {key}: {value}")
-    
-    logger.info("=== Buttons Options loaded ===")
+def prepare_buttons_updates(main_window):
+    manager = WidgetOptionManager(main_window)
+    return manager.prepare_updates(
+        "Player",
+        BUTTONS_OPTIONS,
+        checkbox_options=CHECKBOX_OPTIONS,
+    )
 
-def save_buttons_options(main_window):
-    """Save Buttons options on VPinballX.ini"""
-    logger.info("=== Saving Buttons Options ===")    
-    widgets = {option: getattr(main_window.ui, option, None) for option in DEFAULTS.keys()}
-    updates = {}
-    
-    for key, widget in widgets.items():
-        if not widget:
-            logger.warning(f"Widget {key} not found in UI")
-            continue
-        
-        if isinstance(widget, QCheckBox):
-            updates[key] = "1" if widget.isChecked() else "0"
-        elif isinstance(widget, QComboBox):
-            updates[key] = str(widget.currentIndex())
-        logger.info(f"Saving {key}: {updates[key]}")
-    
-    ini.update_section_subset("Player", updates)
-    
-    try:
-        ini.save()
-        logger.info("=== Buttons Options Saved ===")
-        show_save_message("Buttons Options Saved")
-    except Exception as e:
-        logger.error(f"Error saving Buttons Options: \n {e}")
-        show_save_message("Error saving Buttons Options")
+def on_save_buttons_clicked(main_window):
+    updates = prepare_buttons_updates(main_window)
+    if show_diff_table(ini, updates, parent=main_window):
+        for section, values in updates.items():
+            ini.update_section_subset(section, values)
+        try:
+            ini.save()
+            logger.info("=== Buttons Options saved ===")
+            show_save_message("Buttons Options saved")
+        except Exception as e:
+            logger.error(f"Error saving Buttons Options")

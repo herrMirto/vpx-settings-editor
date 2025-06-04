@@ -1,4 +1,7 @@
 # Byte-compiled / optimized / DLL files
+vpx-settings-editor.pyproject.user
+.DS_Store
+.qtcreator
 __pycache__/
 *.py[cod]
 *$py.class

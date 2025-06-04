@@ -18,6 +18,12 @@
         "ui/pup_options.py",
         "ui/screens_options.py",
         "ui/video_options.py",
-        "ui/vr_options.py"
+        "ui/vr_options.py",
+        "ui_helpers/tables.py",
+        "ui_helpers/standaloneScripts.py",
+        "ui_helpers/metaconfig.py",
+        "ui_helpers/vpsdb.py",
+        "ui_helpers/iniconfig.py",
+        "ui_helpers/vpxparser.py"
     ]
 }

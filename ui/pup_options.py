@@ -1,6 +1,7 @@
 from ui_helpers.widget_diffs import show_diff_table
 from config.vpinball_ini import VPinballINI
 from ui_helpers.widget_option_manager import WidgetOptionManager  
+from utils import logger,show_save_message
 
 ini = VPinballINI()
 
@@ -29,5 +30,11 @@ def on_save_pup_clicked(main_window):
     if show_diff_table(ini, updates, parent=main_window):
         for section, values in updates.items():
             ini.update_section_subset(section, values)
-        ini.save()
+        try:
+            ini.save()
+            logger.info("=== PUP Options saved ===")
+            show_save_message("PUP Options saved")
+        except Exception as e:
+            logger.error(f"Error saving PUP Options: {e}")
+            show_save_message("Error saving PUP Options")
 

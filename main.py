@@ -4,11 +4,12 @@ import sys
 import re
 import subprocess
 import platform
-from PySide6.QtWidgets import QApplication, QWidget, QLabel
-from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import QApplication, QWidget, QLabel, QTableWidgetItem
+from PySide6.QtGui import QIcon, Qt
 from utils import logger
 from tooltips import TOOLTIPS,apply_tooltips
 from config.vpinball_bin import VPinballBin
+from ui_helpers.layout_editor import LayoutEditorWindow
 from version import __version__
 
 # Important:
@@ -17,11 +18,11 @@ from version import __version__
 #     pyside2-uic form.ui -o ui_form.py
 import assets_rc
 from ui_form import Ui_Widget
-from ui.audio_options import load_audio_config, save_audio_options
-from ui.buttons_options import load_buttons_options, save_buttons_options
+from ui.audio_options import load_audio_options, on_save_audio_clicked
+from ui.buttons_options import load_buttons_options, on_save_buttons_clicked
 from ui.editor_options import load_editor_options, on_save_editor_clicked
 from ui.global_options import load_global_options, on_save_global_clicked
-from ui.nudge_and_dof_options import load_nudge_dof_options, save_nudge_dof_options
+from ui.nudge_and_dof_options import load_nudge_dof_options, on_save_nudge_dof_clicked
 from ui.pup_options import load_pup_options, on_save_pup_clicked
 from ui.screens_options import load_screen_options, on_save_screen_clicked
 from ui.video_options import save_video_options, load_video_options
@@ -58,7 +59,7 @@ class Widget(QWidget):
             self.ui.WindowMode.setDisabled(True)
 
         # Load configurations
-        self.audio_widgets = load_audio_config(self)
+        self.audio_widgets = load_audio_options(self)
         self.buttons_options = load_buttons_options(self)
         self.editor_options = load_editor_options(self)
         self.global_options = load_global_options(self)
@@ -133,11 +134,11 @@ class Widget(QWidget):
         )
         # Save Audio config button
         self.ButtonSaveAudioOptions = self.ui.ButtonSaveAudioOptions
-        self.ButtonSaveAudioOptions.clicked.connect(lambda: save_audio_options(self))
+        self.ButtonSaveAudioOptions.clicked.connect(lambda: on_save_audio_clicked(self))
 
         # Save Buttons Options
         self.ButtonSaveButtonsOptions = self.ui.ButtonSaveButtonsOptions
-        self.ButtonSaveButtonsOptions.clicked.connect(lambda: save_buttons_options(self))
+        self.ButtonSaveButtonsOptions.clicked.connect(lambda: on_save_buttons_clicked(self))
 
         # Save Global Options
         self.ButtonSaveGlobalOptions = self.ui.ButtonSaveGlobalOptions
@@ -145,7 +146,7 @@ class Widget(QWidget):
 
         # Save Nudge and DOF Options
         self.ButtonSaveNudgeDOFOptions = self.ui.ButtonSaveNudgeDOFOptions
-        self.ButtonSaveNudgeDOFOptions.clicked.connect(lambda: save_nudge_dof_options(self))
+        self.ButtonSaveNudgeDOFOptions.clicked.connect(lambda: on_save_nudge_dof_clicked(self))
 
          # Save Editor button
         self.ButtonSaveEditorOptions = self.ui.ButtonSaveEditorOptions
@@ -166,6 +167,22 @@ class Widget(QWidget):
         # Save VR config button
         self.ButtonSaveVROptions = self.ui.ButtonSaveVROptions
         self.ButtonSaveVROptions.clicked.connect(lambda: on_save_vr_clicked(self))
+
+        # Setup Low EndPC Options
+        self.ButtonLowEndPCOptions = self.ui.ButtonLowEndPC
+        self.ButtonLowEndPCOptions.clicked.connect(self.setup_low_end_pc)
+
+        # Setup Low EndPC Options
+        self.ButtonHighEndPCOptions = self.ui.ButtonHighEndPC
+        self.ButtonHighEndPCOptions.clicked.connect(self.setup_high_end_pc)
+
+        # Setup Screens Button
+        self.ButtonSetupScreens = self.ui.ButtonSetupScreens
+        self.ButtonSetupScreens.clicked.connect(self.showScreensSetup)
+
+         # Setup Screens Button
+        self.ButtonSetupPUPScreens = self.ui.ButtonSetupPUPScreens
+        self.ButtonSetupPUPScreens.clicked.connect(self.showPUPScreensSetup)
 
         self.window_index = get_playfield_mode()
         if self.window_index:
@@ -209,10 +226,10 @@ class Widget(QWidget):
 
 
     def update_snd_playfield_label(self, value):
-        self.ui.playfld_snd_label.setText(str(value))
+        self.ui.LabelSoundVolumeNumber.setText(str(value))
 
     def update_snd_backglass_label(self, value):
-        self.ui.backglass_snd_label.setText(str(value))
+        self.ui.LabelMusicVolumeNumber.setText(str(value))
 
     def load_log(self):
         log_path = os.path.expanduser("~/.vpinball/vpinball.log")
@@ -237,7 +254,68 @@ class Widget(QWidget):
     def clear_logs(self):
         self.ui.LogtextBrowser.setPlainText("")
 
-    
+    def apply_screen_positions(self, data):
+        for key, value in data.items():
+            widget = self.findChild(QWidget, key)
+            if widget:
+                if hasattr(widget, "setText"):
+                    widget.setText(str(value))
+                elif hasattr(widget, "setValue"):
+                    widget.setValue(int(value))
+        logger.info(f"Screen positions updated: {data}")
+
+    def setup_low_end_pc(self):
+        self.ui.SyncMode.setCurrentIndex(2)
+        self.ui.MaxFramerate.setText("0")
+        self.ui.MaxPrerenderedFrames.setText("0")
+        self.ui.FXAA.setCurrentIndex(0)
+        self.ui.Sharpen.setCurrentIndex(0)
+        self.ui.ScaleFXDMD.setChecked(False)
+        self.ui.MaxAmbientOcclusion.setCurrentIndex(2)
+        self.ui.SSRefl.setText("0")
+        self.ui.PFReflection.setCurrentIndex(0)
+        self.ui.MaxTexDimension.setCurrentIndex(0)
+        self.ui.AAFactor.setCurrentIndex(0)
+        self.ui.MSAASamples.setCurrentIndex(0)
+        self.ui.UseNVidiaAPI.setChecked(True)
+        self.ui.ForceBloomOff.setChecked(False)
+        self.ui.ForceAnisotropicFiltering.setChecked(False)
+        self.ui.CompressTextures.setChecked(False)
+        self.ui.SoftwareVertexProcessing.setChecked(False)
+        self.ui.AlphaRampAccuracy.setValue(5)
+
+    def setup_high_end_pc(self):
+        self.ui.SyncMode.setCurrentIndex(3)
+        self.ui.MaxFramerate.setText("0")
+        self.ui.MaxPrerenderedFrames.setText("0")
+        self.ui.FXAA.setCurrentIndex(2)
+        self.ui.Sharpen.setCurrentIndex(2)
+        self.ui.ScaleFXDMD.setChecked(False)
+        self.ui.MaxAmbientOcclusion.setCurrentIndex(0)
+        self.ui.SSRefl.setText("1")
+        self.ui.PFReflection.setCurrentIndex(2)
+        self.ui.MaxTexDimension.setCurrentIndex(0)
+        self.ui.AAFactor.setCurrentIndex(0)
+        self.ui.MSAASamples.setCurrentIndex(0)
+        self.ui.UseNVidiaAPI.setChecked(False)
+        self.ui.ForceBloomOff.setChecked(False)
+        self.ui.ForceAnisotropicFiltering.setChecked(True)
+        self.ui.CompressTextures.setChecked(False)
+        self.ui.SoftwareVertexProcessing.setChecked(False)
+        self.ui.AlphaRampAccuracy.setValue(10)
+
+    def showScreensSetup(self):
+        screens = QApplication.screens()
+        self.screens_setup_window = LayoutEditorWindow(screens, mode="screens", parent=self)
+        self.screens_setup_window.positionsSaved.connect(self.apply_screen_positions)
+        self.screens_setup_window.show()
+
+    def showPUPScreensSetup(self):
+        screens = QApplication.screens()
+        self.screens_setup_window = LayoutEditorWindow(screens, mode="pup", parent=self)
+        self.screens_setup_window.positionsSaved.connect(self.apply_screen_positions)
+        self.screens_setup_window.show()
+
 
 if __name__ == "__main__":
     if "--version" in sys.argv:
