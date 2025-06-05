@@ -9,6 +9,7 @@ DEFAULT_CONFIG = """
 [Paths]
 vpx_ini_path = /path/to/VPinballX.ini
 vpx_binary_path = /path/to/VPinballX_GL or /path/to/VPinballX_BGFX
+tables_path = /path/to/vpx/tables
 """
 
 def load_config():
@@ -41,31 +42,39 @@ def validate_config():
             show_config_error("Missing section [Paths] in the configuration file.")
 
         # Check mandatory keys
-        if "vpx_ini_path" not in config["Paths"] or "vpx_binary_path" not in config["Paths"]:
-            show_config_error("Missing mandatory keys 'vpx_ini_path' or 'vpx_binary_path' in the configuration file.")
+        mandatory = {"vpx_ini_path", "vpx_binary_path", "tables_path"}
+        if not mandatory.issubset(config["Paths"].keys()):
+            show_config_error("Missing mandatory keys 'vpx_ini_path', 'vpx_binary_path' or 'tables_path' in the configuration file.")
 
         # Check if the files exist
         ini_path = config["Paths"]["vpx_ini_path"]
         binary_path = config["Paths"]["vpx_binary_path"]
+        tables_path = config["Paths"]["tables_path"]
 
         missing = []
         if not os.path.isfile(ini_path):
             missing.append(ini_path)
         if not os.path.isfile(binary_path):
             missing.append(binary_path)
+        if not os.path.isdir(tables_path):
+            missing.append(tables_path)
 
         if missing:
             show_missing_files_error(missing)
 
-        return ini_path, binary_path
+        return ini_path, binary_path, tables_path
 
     except Exception as e:
         show_config_error(f"Error while reading configuration")
 
 def get_vpx_ini_path():
-    ini_path, _ = validate_config()
+    ini_path, _, _ = validate_config()
     return ini_path
 
 def get_vpx_binary_path():
-    _, binary_path = validate_config()
+    _, binary_path, _ = validate_config()
     return binary_path
+
+def get_tables_path():
+    _, _, tables_path = validate_config()
+    return tables_path

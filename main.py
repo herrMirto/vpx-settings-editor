@@ -4,7 +4,7 @@ import sys
 import re
 import subprocess
 import platform
-from PySide6.QtWidgets import QApplication, QWidget, QLabel, QTableWidgetItem
+from PySide6.QtWidgets import QApplication, QWidget, QLabel, QTableWidgetItem, QTableWidget, QVBoxLayout, QPushButton
 from PySide6.QtGui import QIcon, Qt
 from utils import logger
 from tooltips import TOOLTIPS,apply_tooltips
@@ -31,6 +31,12 @@ from ui_helpers.stereo_3d import setup_stereo3d_logic
 from ui_helpers.setup_windowed_resolutions import setup_aspect_ratio_logic, get_playfield_mode
 from ui_helpers.video_resolutions import get_display_resolutions, load_playfield_resolution
 from ui_helpers.widget_option_manager import change_color
+from tables_utils import (
+    load_tables_index,
+    scan_tables,
+    save_tables_index,
+    ensure_vpsdb,
+)
 
 class Widget(QWidget):
     def __init__(self, parent=None):
@@ -69,6 +75,9 @@ class Widget(QWidget):
         self.vr_options = load_vr_options(self)
         self.editor_options = load_editor_options(self)
         self.video_options = load_video_options(self)
+
+        # Setup Tables Tab
+        self.setup_tables_tab()
 
         self.setup_color_labels()
         setup_stereo3d_logic(
@@ -315,6 +324,43 @@ class Widget(QWidget):
         self.screens_setup_window = LayoutEditorWindow(screens, mode="pup", parent=self)
         self.screens_setup_window.positionsSaved.connect(self.apply_screen_positions)
         self.screens_setup_window.show()
+
+    # ----- Tables Tab Logic -----
+    def setup_tables_tab(self):
+        self.tables_tab = QWidget()
+        layout = QVBoxLayout(self.tables_tab)
+        self.tables_table = QTableWidget()
+        self.tables_table.setColumnCount(3)
+        self.tables_table.setHorizontalHeaderLabels(["Table", "SHA256", "VPS ID"])
+        layout.addWidget(self.tables_table)
+        self.rescan_button = QPushButton("Re-scan Tables")
+        self.rescan_button.clicked.connect(self.rescan_tables)
+        layout.addWidget(self.rescan_button)
+        self.ui.tabWidget.addTab(self.tables_tab, "Tables")
+        self.load_tables()
+
+    def load_tables(self):
+        tables, ids, ts = load_tables_index()
+        db_entries, ts = ensure_vpsdb(ts)
+        if not tables:
+            tables, ids = scan_tables(db_entries)
+            save_tables_index(tables, ids, ts)
+        self.populate_tables(tables, ids)
+
+    def populate_tables(self, tables, ids):
+        self.tables_table.setRowCount(0)
+        for row, (path, digest) in enumerate(sorted(tables.items())):
+            self.tables_table.insertRow(row)
+            self.tables_table.setItem(row, 0, QTableWidgetItem(os.path.basename(path)))
+            self.tables_table.setItem(row, 1, QTableWidgetItem(digest))
+            self.tables_table.setItem(row, 2, QTableWidgetItem(ids.get(path, "")))
+
+    def rescan_tables(self):
+        _, _, ts = load_tables_index()
+        db_entries, ts = ensure_vpsdb(ts)
+        tables, ids = scan_tables(db_entries)
+        save_tables_index(tables, ids, ts)
+        self.populate_tables(tables, ids)
 
 
 if __name__ == "__main__":
