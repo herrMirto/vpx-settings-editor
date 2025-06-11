@@ -4,7 +4,8 @@ import json
 import configparser
 from difflib import SequenceMatcher
 from urllib.request import urlopen
-from config_utils import get_tables_path
+import subprocess
+from config_utils import get_tables_path, get_vpxtool_path
 from utils import logger
 import re
 
@@ -12,6 +13,7 @@ INDEX_FILE = os.path.expanduser("~/.vpx_settings_editor/tables_index.ini")
 VPS_DB_URL = "https://virtualpinballspreadsheet.github.io/vps-db/db/vpsdb.json"
 VPS_LAST_UPDATED_URL = "https://virtualpinballspreadsheet.github.io/vps-db/lastUpdated.json"
 LOCAL_DB_FILE = os.path.expanduser("~/.vpx_settings_editor/vpsdb.json")
+PATCH_HASHES_URL = "https://raw.githubusercontent.com/jsm174/vpx-standalone-scripts/master/hashes.json"
 
 
 def compute_sha256(filepath):
@@ -25,6 +27,25 @@ def compute_sha256(filepath):
 def fetch_json(url):
     with urlopen(url) as resp:
         return json.loads(resp.read().decode())
+
+
+def load_patch_hashes():
+    try:
+        data = fetch_json(PATCH_HASHES_URL)
+    except Exception as e:
+        logger.error(f"Failed to fetch patch hashes: {e}")
+        return {}
+    patches = {}
+    if isinstance(data, list):
+        for entry in data:
+            sha = entry.get("sha256")
+            script = entry.get("script") or entry.get("file")
+            if sha and script:
+                patches[sha] = script
+    elif isinstance(data, dict):
+        for sha, script in data.items():
+            patches[sha] = script
+    return patches
 
 
 def ensure_vpsdb(existing_ts=None):
@@ -70,6 +91,8 @@ def scan_tables(db_entries):
     tables_path = get_tables_path()
     digests = {}
     ids = {}
+    scripts = {}
+    tool_path = get_vpxtool_path()
     for root, dirs, files in os.walk(tables_path):
         for name in files:
             if name.lower().endswith(".vpx"):
@@ -77,38 +100,52 @@ def scan_tables(db_entries):
                 try:
                     digest = compute_sha256(full)
                     digests[full] = digest
+                    # Extract VBS script
+                    subprocess.run([tool_path, "extractvbs", full], check=False)
+                    vbs_file = os.path.splitext(full)[0] + ".vbs"
+                    if os.path.exists(vbs_file):
+                        scripts[full] = compute_sha256(vbs_file)
                     if db_entries:
                         dir_name = os.path.basename(root)
                         clean_dir_name = re.sub(r"\s*\([^)]*\)\s*$", "", dir_name)
-                        print(clean_dir_name)
                         ids[full] = find_vps_id(clean_dir_name, db_entries)
                 except Exception as e:
                     logger.error(f"Error hashing {full}: {e}")
-    return digests, ids
+    return digests, ids, scripts
 
 
 
 def load_tables_index():
     if not os.path.exists(INDEX_FILE):
-        return {}, {}, None
+        return {}, {}, {}, {}, None
     parser = configparser.ConfigParser()
     parser.read(INDEX_FILE)
     tables = {}
     ids = {}
+    scripts = {}
+    patched = {}
     if parser.has_section("Tables"):
         for path, digest in parser["Tables"].items():
             tables[path] = digest
     if parser.has_section("IDs"):
         for path, table_id in parser["IDs"].items():
             ids[path] = table_id
+    if parser.has_section("Scripts"):
+        for path, sdigest in parser["Scripts"].items():
+            scripts[path] = sdigest
+    if parser.has_section("Patched"):
+        for path, value in parser["Patched"].items():
+            patched[path] = value
     ts = parser.get("Meta", "vpsdb_timestamp", fallback=None)
-    return tables, ids, ts
+    return tables, ids, scripts, patched, ts
 
 
-def save_tables_index(tables, ids, timestamp=None):
+def save_tables_index(tables, ids, scripts, patched, timestamp=None):
     parser = configparser.ConfigParser()
     parser["Tables"] = tables
     parser["IDs"] = ids
+    parser["Scripts"] = scripts
+    parser["Patched"] = patched
     if timestamp:
         parser["Meta"] = {"vpsdb_timestamp": timestamp}
     os.makedirs(os.path.dirname(INDEX_FILE), exist_ok=True)

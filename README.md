@@ -29,6 +29,7 @@ Create the configuration file $HOME/.config/vpx_settings_editor.cfg with the fol
 vpx_binary_path = /home/user/vpinball/build/VPinballX_BGFX
 vpx_ini_path = /home/user/.vpinball/VPinballX.ini
 tables_path = /home/user/vpinball/Tables
+vpxtool_path = /home/user/vpinball/tools/vpxtool
 ```
 
 * Make a backup of your VPinballX.ini file first.

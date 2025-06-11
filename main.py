@@ -4,6 +4,7 @@ import sys
 import re
 import subprocess
 import platform
+from urllib.request import urlopen
 from PySide6.QtWidgets import QApplication, QWidget, QLabel, QTableWidgetItem, QTableWidget, QVBoxLayout, QPushButton
 from PySide6.QtGui import QIcon, Qt
 from utils import logger
@@ -33,6 +34,7 @@ from ui_helpers.video_resolutions import get_display_resolutions, load_playfield
 from ui_helpers.widget_option_manager import change_color
 from tables_utils import (
     load_tables_index,
+    load_patch_hashes,
     scan_tables,
     save_tables_index,
     ensure_vpsdb,
@@ -330,8 +332,8 @@ class Widget(QWidget):
         self.tables_tab = QWidget()
         layout = QVBoxLayout(self.tables_tab)
         self.tables_table = QTableWidget()
-        self.tables_table.setColumnCount(3)
-        self.tables_table.setHorizontalHeaderLabels(["Table", "SHA256", "VPS ID"])
+        self.tables_table.setColumnCount(4)
+        self.tables_table.setHorizontalHeaderLabels(["Table", "SHA256", "VPS ID", "Standalone Patch"])
         layout.addWidget(self.tables_table)
         self.rescan_button = QPushButton("Re-scan Tables")
         self.rescan_button.clicked.connect(self.rescan_tables)
@@ -340,27 +342,57 @@ class Widget(QWidget):
         self.load_tables()
 
     def load_tables(self):
-        tables, ids, ts = load_tables_index()
+        tables, ids, scripts, patched, ts = load_tables_index()
         db_entries, ts = ensure_vpsdb(ts)
         if not tables:
-            tables, ids = scan_tables(db_entries)
-            save_tables_index(tables, ids, ts)
-        self.populate_tables(tables, ids)
+            tables, ids, scripts = scan_tables(db_entries)
+            patched = {}
+            save_tables_index(tables, ids, scripts, patched, ts)
+        self.populate_tables(tables, ids, scripts, patched)
 
-    def populate_tables(self, tables, ids):
+    def populate_tables(self, tables, ids, scripts, patched):
         self.tables_table.setRowCount(0)
+        self.patch_map = load_patch_hashes()
         for row, (path, digest) in enumerate(sorted(tables.items())):
             self.tables_table.insertRow(row)
             self.tables_table.setItem(row, 0, QTableWidgetItem(os.path.basename(path)))
             self.tables_table.setItem(row, 1, QTableWidgetItem(digest))
             self.tables_table.setItem(row, 2, QTableWidgetItem(ids.get(path, "")))
+            patch_widget = QTableWidgetItem("")
+            script_hash = scripts.get(path)
+            patch_url = None
+            if script_hash:
+                patch_script = self.patch_map.get(script_hash)
+                if patch_script and patched.get(path) != "yes":
+                    patch_url = patch_script
+            if patch_url:
+                btn = QPushButton("Apply Patch")
+                btn.clicked.connect(lambda _, p=path, u=patch_url: self.apply_patch(p, u, patched))
+                self.tables_table.setCellWidget(row, 3, btn)
+            else:
+                self.tables_table.setItem(row, 3, QTableWidgetItem("Patched" if patched.get(path)=="yes" else ""))
 
     def rescan_tables(self):
-        _, _, ts = load_tables_index()
+        _, _, _, patched, ts = load_tables_index()
         db_entries, ts = ensure_vpsdb(ts)
-        tables, ids = scan_tables(db_entries)
-        save_tables_index(tables, ids, ts)
-        self.populate_tables(tables, ids)
+        tables, ids, scripts = scan_tables(db_entries)
+        save_tables_index(tables, ids, scripts, patched, ts)
+        self.populate_tables(tables, ids, scripts, patched)
+
+    def apply_patch(self, table_path, patch_rel_url, patched_map):
+        try:
+            base_url = "https://raw.githubusercontent.com/jsm174/vpx-standalone-scripts/master/"
+            url = base_url + patch_rel_url
+            data = urlopen(url).read()
+            dest = os.path.join(os.path.dirname(table_path), os.path.basename(patch_rel_url))
+            with open(dest, "wb") as f:
+                f.write(data)
+            patched_map[table_path] = "yes"
+            tables, ids, scripts, _, ts = load_tables_index()
+            save_tables_index(tables, ids, scripts, patched_map, ts)
+            self.load_tables()
+        except Exception as e:
+            logger.error(f"Failed to apply patch: {e}")
 
 
 if __name__ == "__main__":
