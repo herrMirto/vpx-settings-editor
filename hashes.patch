@@ -1,0 +1,193 @@
+diff --git a/main.py b/main.py
+index bd6f16188d5b90378fe7306bb971159d340d22b2..1df5276e09588d7b3e5abca2873d482b62d8ca2b 100644
+--- a/main.py
++++ b/main.py
+@@ -1,32 +1,33 @@
+ # This Python file uses the following encoding: utf-8
+ import os
+ import sys
+ import re
+ import subprocess
+ import platform
+ from urllib.request import urlopen
++from urllib.parse import urlparse
+ from PySide6.QtWidgets import QApplication, QWidget, QLabel, QTableWidgetItem, QTableWidget, QVBoxLayout, QPushButton
+ from PySide6.QtGui import QIcon, Qt
+ from utils import logger
+ from tooltips import TOOLTIPS,apply_tooltips
+ from config.vpinball_bin import VPinballBin
+ from ui_helpers.layout_editor import LayoutEditorWindow
+ from version import __version__
+ 
+ # Important:
+ # You need to run the following command to generate the ui_form.py file
+ #     pyside6-uic form.ui -o ui_form.py, or
+ #     pyside2-uic form.ui -o ui_form.py
+ import assets_rc
+ from ui_form import Ui_Widget
+ from ui.audio_options import load_audio_options, on_save_audio_clicked
+ from ui.buttons_options import load_buttons_options, on_save_buttons_clicked
+ from ui.editor_options import load_editor_options, on_save_editor_clicked
+ from ui.global_options import load_global_options, on_save_global_clicked
+ from ui.nudge_and_dof_options import load_nudge_dof_options, on_save_nudge_dof_clicked
+ from ui.pup_options import load_pup_options, on_save_pup_clicked
+ from ui.screens_options import load_screen_options, on_save_screen_clicked
+ from ui.video_options import save_video_options, load_video_options
+ from ui.vr_options import load_vr_options, on_save_vr_clicked
+ from ui_helpers.stereo_3d import setup_stereo3d_logic
+ from ui_helpers.setup_windowed_resolutions import setup_aspect_ratio_logic, get_playfield_mode
+@@ -357,50 +358,51 @@ class Widget(QWidget):
+             self.tables_table.insertRow(row)
+             self.tables_table.setItem(row, 0, QTableWidgetItem(os.path.basename(path)))
+             self.tables_table.setItem(row, 1, QTableWidgetItem(digest))
+             self.tables_table.setItem(row, 2, QTableWidgetItem(ids.get(path, "")))
+             patch_widget = QTableWidgetItem("")
+             script_hash = scripts.get(path)
+             patch_url = None
+             if script_hash:
+                 patch_script = self.patch_map.get(script_hash)
+                 if patch_script and patched.get(path) != "yes":
+                     patch_url = patch_script
+             if patch_url:
+                 btn = QPushButton("Apply Patch")
+                 btn.clicked.connect(lambda _, p=path, u=patch_url: self.apply_patch(p, u, patched))
+                 self.tables_table.setCellWidget(row, 3, btn)
+             else:
+                 self.tables_table.setItem(row, 3, QTableWidgetItem("Patched" if patched.get(path)=="yes" else ""))
+ 
+     def rescan_tables(self):
+         _, _, _, patched, ts = load_tables_index()
+         db_entries, ts = ensure_vpsdb(ts)
+         tables, ids, scripts = scan_tables(db_entries)
+         save_tables_index(tables, ids, scripts, patched, ts)
+         self.populate_tables(tables, ids, scripts, patched)
+ 
+-    def apply_patch(self, table_path, patch_rel_url, patched_map):
++    def apply_patch(self, table_path, patch_url, patched_map):
+         try:
+-            base_url = "https://raw.githubusercontent.com/jsm174/vpx-standalone-scripts/master/"
+-            url = base_url + patch_rel_url
+-            data = urlopen(url).read()
+-            dest = os.path.join(os.path.dirname(table_path), os.path.basename(patch_rel_url))
++            data = urlopen(patch_url).read()
++            parsed = urlparse(patch_url)
++            dest = os.path.join(
++                os.path.dirname(table_path), os.path.basename(parsed.path)
++            )
+             with open(dest, "wb") as f:
+                 f.write(data)
+             patched_map[table_path] = "yes"
+             tables, ids, scripts, _, ts = load_tables_index()
+             save_tables_index(tables, ids, scripts, patched_map, ts)
+             self.load_tables()
+         except Exception as e:
+             logger.error(f"Failed to apply patch: {e}")
+ 
+ 
+ if __name__ == "__main__":
+     if "--version" in sys.argv:
+         print(f"vpx-settings-editor {__version__}")
+         sys.exit(0)
+ 
+     app = QApplication(sys.argv)
+     widget = Widget()
+     widget.show()
+     sys.exit(app.exec())
+diff --git a/tables_utils.py b/tables_utils.py
+index 8b395f84264ca4fb71f5b98a1c56603c9f88c880..c5e66d566ea66151da45876d218d5b66c6499491 100644
+--- a/tables_utils.py
++++ b/tables_utils.py
+@@ -8,65 +8,85 @@ import subprocess
+ from config_utils import get_tables_path, get_vpxtool_path
+ from utils import logger
+ import re
+ 
+ INDEX_FILE = os.path.expanduser("~/.vpx_settings_editor/tables_index.ini")
+ VPS_DB_URL = "https://virtualpinballspreadsheet.github.io/vps-db/db/vpsdb.json"
+ VPS_LAST_UPDATED_URL = "https://virtualpinballspreadsheet.github.io/vps-db/lastUpdated.json"
+ LOCAL_DB_FILE = os.path.expanduser("~/.vpx_settings_editor/vpsdb.json")
+ PATCH_HASHES_URL = "https://raw.githubusercontent.com/jsm174/vpx-standalone-scripts/master/hashes.json"
+ 
+ 
+ def compute_sha256(filepath):
+     sha256_hash = hashlib.sha256()
+     with open(filepath, "rb") as f:
+         for chunk in iter(lambda: f.read(4096), b""):
+             sha256_hash.update(chunk)
+     return sha256_hash.hexdigest()
+ 
+ 
+ def fetch_json(url):
+     with urlopen(url) as resp:
+         return json.loads(resp.read().decode())
+ 
+ 
+ def load_patch_hashes():
++    """Return a map of script SHA256 to patched file URL."""
+     try:
+         data = fetch_json(PATCH_HASHES_URL)
+     except Exception as e:
+         logger.error(f"Failed to fetch patch hashes: {e}")
+         return {}
++
+     patches = {}
+-    if isinstance(data, list):
+-        for entry in data:
++
++    if isinstance(data, dict):
++        entries = data.values()
++    elif isinstance(data, list):
++        entries = data
++    else:
++        entries = []
++
++    for entry in entries:
++        if not isinstance(entry, dict):
++            continue
++        file_info = entry.get("file", {})
++        patched_info = entry.get("patched", {})
++
++        sha = None
++        if isinstance(file_info, dict):
++            sha = file_info.get("sha256")
++        elif isinstance(entry.get("sha256"), str):
+             sha = entry.get("sha256")
+-            script = entry.get("script") or entry.get("file")
+-            if sha and script:
+-                patches[sha] = script
+-    elif isinstance(data, dict):
+-        for sha, script in data.items():
+-            patches[sha] = script
++
++        url = None
++        if isinstance(patched_info, dict):
++            url = patched_info.get("url")
++
++        if sha and url:
++            patches[sha] = url
++
+     return patches
+ 
+ 
+ def ensure_vpsdb(existing_ts=None):
+     remote_ts = None
+     try:
+         data = fetch_json(VPS_LAST_UPDATED_URL)
+         remote_ts = data.get("lastUpdated", "")
+     except Exception as e:
+         logger.error(f"Failed to fetch lastUpdated: {e}")
+ 
+     db_data = None
+     if not os.path.exists(LOCAL_DB_FILE) or (remote_ts and remote_ts != existing_ts):
+         try:
+             db_data = fetch_json(VPS_DB_URL)
+             os.makedirs(os.path.dirname(LOCAL_DB_FILE), exist_ok=True)
+             with open(LOCAL_DB_FILE, "w", encoding="utf-8") as f:
+                 json.dump(db_data, f)
+             existing_ts = remote_ts or existing_ts
+         except Exception as e:
+             logger.error(f"Failed to download VPS DB: {e}")
+     if db_data is None and os.path.exists(LOCAL_DB_FILE):
+         with open(LOCAL_DB_FILE, "r", encoding="utf-8") as f:
+             db_data = json.load(f)
+     return db_data or [], existing_ts

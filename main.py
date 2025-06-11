@@ -5,6 +5,7 @@ import re
 import subprocess
 import platform
 from urllib.request import urlopen
+from urllib.parse import urlparse
 from PySide6.QtWidgets import QApplication, QWidget, QLabel, QTableWidgetItem, QTableWidget, QVBoxLayout, QPushButton
 from PySide6.QtGui import QIcon, Qt
 from utils import logger
@@ -379,12 +380,13 @@ class Widget(QWidget):
         save_tables_index(tables, ids, scripts, patched, ts)
         self.populate_tables(tables, ids, scripts, patched)
 
-    def apply_patch(self, table_path, patch_rel_url, patched_map):
+    def apply_patch(self, table_path, patch_url, patched_map):
         try:
-            base_url = "https://raw.githubusercontent.com/jsm174/vpx-standalone-scripts/master/"
-            url = base_url + patch_rel_url
-            data = urlopen(url).read()
-            dest = os.path.join(os.path.dirname(table_path), os.path.basename(patch_rel_url))
+            data = urlopen(patch_url).read()
+            parsed = urlparse(patch_url)
+            dest = os.path.join(
+                os.path.dirname(table_path), os.path.basename(parsed.path)
+            )
             with open(dest, "wb") as f:
                 f.write(data)
             patched_map[table_path] = "yes"

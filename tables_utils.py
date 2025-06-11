@@ -30,21 +30,41 @@ def fetch_json(url):
 
 
 def load_patch_hashes():
+    """Return a map of script SHA256 to patched file URL."""
     try:
         data = fetch_json(PATCH_HASHES_URL)
     except Exception as e:
         logger.error(f"Failed to fetch patch hashes: {e}")
         return {}
+
     patches = {}
-    if isinstance(data, list):
-        for entry in data:
+
+    if isinstance(data, dict):
+        entries = data.values()
+    elif isinstance(data, list):
+        entries = data
+    else:
+        entries = []
+
+    for entry in entries:
+        if not isinstance(entry, dict):
+            continue
+        file_info = entry.get("file", {})
+        patched_info = entry.get("patched", {})
+
+        sha = None
+        if isinstance(file_info, dict):
+            sha = file_info.get("sha256")
+        elif isinstance(entry.get("sha256"), str):
             sha = entry.get("sha256")
-            script = entry.get("script") or entry.get("file")
-            if sha and script:
-                patches[sha] = script
-    elif isinstance(data, dict):
-        for sha, script in data.items():
-            patches[sha] = script
+
+        url = None
+        if isinstance(patched_info, dict):
+            url = patched_info.get("url")
+
+        if sha and url:
+            patches[sha] = url
+
     return patches
 
 
