@@ -1,7 +1,6 @@
 import os
 import hashlib
 import json
-import configparser
 from difflib import SequenceMatcher
 from urllib.request import urlopen
 import subprocess
@@ -9,7 +8,7 @@ from config_utils import get_tables_path, get_vpxtool_path
 from utils import logger
 import re
 
-INDEX_FILE = os.path.expanduser("~/.vpx_settings_editor/tables_index.ini")
+INDEX_FILE = os.path.expanduser("~/.vpx_settings_editor/tables_index.json")
 VPS_DB_URL = "https://virtualpinballspreadsheet.github.io/vps-db/db/vpsdb.json"
 VPS_LAST_UPDATED_URL = "https://virtualpinballspreadsheet.github.io/vps-db/lastUpdated.json"
 LOCAL_DB_FILE = os.path.expanduser("~/.vpx_settings_editor/vpsdb.json")
@@ -23,6 +22,17 @@ def compute_sha256(filepath):
             sha256_hash.update(chunk)
     return sha256_hash.hexdigest()
 
+def ensure_msdos_line_endings(text):
+    if "\r\n" in text and "\n" not in text.replace("\r\n", ""):
+        return text
+    return text.replace("\r\n", "\n").replace("\n", "\r\n")
+
+def compute_sha256_vbs(filepath):
+    with open(filepath, "r", encoding="utf-8") as f:
+        content = f.read()
+    normalized = ensure_msdos_line_endings(content)
+    sha = hashlib.sha256(normalized.encode("utf-8")).hexdigest()
+    return sha
 
 def fetch_json(url):
     with urlopen(url) as resp:
@@ -112,11 +122,13 @@ def scan_tables(db_entries):
     digests = {}
     ids = {}
     scripts = {}
+    vbs_files = {}
     tool_path = get_vpxtool_path()
     for root, dirs, files in os.walk(tables_path):
         for name in files:
-            if name.lower().endswith(".vpx"):
-                full = os.path.join(root, name)
+            full = os.path.join(root, name)
+            lname = name.lower()
+            if lname.endswith(".vpx"):
                 try:
                     digest = compute_sha256(full)
                     digests[full] = digest
@@ -131,45 +143,43 @@ def scan_tables(db_entries):
                         ids[full] = find_vps_id(clean_dir_name, db_entries)
                 except Exception as e:
                     logger.error(f"Error hashing {full}: {e}")
-    return digests, ids, scripts
+            elif lname.endswith(".vbs"):
+                try:
+                    vbs_files[full] = compute_sha256_vbs(full)
+                except Exception as e:
+                    logger.error(f"Error hashing {full}: {e}")
+    return digests, ids, scripts, vbs_files
 
 
 
 def load_tables_index():
     if not os.path.exists(INDEX_FILE):
-        return {}, {}, {}, {}, None
-    parser = configparser.ConfigParser()
-    parser.read(INDEX_FILE)
-    tables = {}
-    ids = {}
-    scripts = {}
-    patched = {}
-    if parser.has_section("Tables"):
-        for path, digest in parser["Tables"].items():
-            tables[path] = digest
-    if parser.has_section("IDs"):
-        for path, table_id in parser["IDs"].items():
-            ids[path] = table_id
-    if parser.has_section("Scripts"):
-        for path, sdigest in parser["Scripts"].items():
-            scripts[path] = sdigest
-    if parser.has_section("Patched"):
-        for path, value in parser["Patched"].items():
-            patched[path] = value
-    ts = parser.get("Meta", "vpsdb_timestamp", fallback=None)
-    return tables, ids, scripts, patched, ts
+        return {}, {}, {}, {}, {}, None
+    with open(INDEX_FILE, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    tables = data.get("tables", {})
+    ids = data.get("ids", {})
+    scripts = data.get("scripts", {})
+    vbs_files = data.get("vbs_files", {})
+    patched = data.get("patched", {})
+    meta = data.get("meta", {})
+    ts = meta.get("vpsdb_timestamp")
+    return tables, ids, scripts, vbs_files, patched, ts
 
 
-def save_tables_index(tables, ids, scripts, patched, timestamp=None):
-    parser = configparser.ConfigParser()
-    parser["Tables"] = tables
-    parser["IDs"] = ids
-    parser["Scripts"] = scripts
-    parser["Patched"] = patched
+def save_tables_index(tables, ids, scripts, vbs_files, patched, timestamp=None):
+    data = {
+        "tables": tables,
+        "ids": ids,
+        "scripts": scripts,
+        "vbs_files": vbs_files,
+        "patched": patched,
+    }
     if timestamp:
-        parser["Meta"] = {"vpsdb_timestamp": timestamp}
+        data["meta"] = {"vpsdb_timestamp": timestamp}
     os.makedirs(os.path.dirname(INDEX_FILE), exist_ok=True)
-    with open(INDEX_FILE, "w") as f:
-        parser.write(f)
+    with open(INDEX_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2)
     logger.info("Tables index saved")
 

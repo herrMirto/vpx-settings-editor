@@ -343,12 +343,12 @@ class Widget(QWidget):
         self.load_tables()
 
     def load_tables(self):
-        tables, ids, scripts, patched, ts = load_tables_index()
+        tables, ids, scripts, _, patched, ts = load_tables_index()
         db_entries, ts = ensure_vpsdb(ts)
         if not tables:
-            tables, ids, scripts = scan_tables(db_entries)
+            tables, ids, scripts, vbs_files = scan_tables(db_entries)
             patched = {}
-            save_tables_index(tables, ids, scripts, patched, ts)
+            save_tables_index(tables, ids, scripts, vbs_files, patched, ts)
         self.populate_tables(tables, ids, scripts, patched)
 
     def populate_tables(self, tables, ids, scripts, patched):
@@ -374,10 +374,10 @@ class Widget(QWidget):
                 self.tables_table.setItem(row, 3, QTableWidgetItem("Patched" if patched.get(path)=="yes" else ""))
 
     def rescan_tables(self):
-        _, _, _, patched, ts = load_tables_index()
+        _, _, _, _, patched, ts = load_tables_index()
         db_entries, ts = ensure_vpsdb(ts)
-        tables, ids, scripts = scan_tables(db_entries)
-        save_tables_index(tables, ids, scripts, patched, ts)
+        tables, ids, scripts, vbs_files = scan_tables(db_entries)
+        save_tables_index(tables, ids, scripts, vbs_files, patched, ts)
         self.populate_tables(tables, ids, scripts, patched)
 
     def apply_patch(self, table_path, patch_url, patched_map):
@@ -390,8 +390,8 @@ class Widget(QWidget):
             with open(dest, "wb") as f:
                 f.write(data)
             patched_map[table_path] = "yes"
-            tables, ids, scripts, _, ts = load_tables_index()
-            save_tables_index(tables, ids, scripts, patched_map, ts)
+            tables, ids, scripts, vbs_files, _, ts = load_tables_index()
+            save_tables_index(tables, ids, scripts, vbs_files, patched_map, ts)
             self.load_tables()
         except Exception as e:
             logger.error(f"Failed to apply patch: {e}")
