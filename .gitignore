@@ -1,5 +1,6 @@
 # Byte-compiled / optimized / DLL files
 vpx-settings-editor.pyproject.user
+*.autosave
 .DS_Store
 .qtcreator
 __pycache__/

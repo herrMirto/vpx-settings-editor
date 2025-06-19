@@ -28,7 +28,7 @@
     </rect>
    </property>
    <property name="currentIndex">
-    <number>0</number>
+    <number>3</number>
    </property>
    <widget class="QWidget" name="Audio">
     <attribute name="title">
@@ -2340,7 +2340,7 @@
        <rect>
         <x>10</x>
         <y>30</y>
-        <width>556</width>
+        <width>461</width>
         <height>57</height>
        </rect>
       </property>
@@ -3672,7 +3672,7 @@
        <rect>
         <x>10</x>
         <y>30</y>
-        <width>556</width>
+        <width>461</width>
         <height>57</height>
        </rect>
       </property>
@@ -5077,12 +5077,12 @@
        <height>83</height>
       </rect>
      </property>
-     <layout class="QGridLayout" name="StartCreditGrid" columnstretch="1,1,1,1">
+     <layout class="QGridLayout" name="StartCreditGrid" columnstretch="1,0,0,1">
       <property name="sizeConstraint">
        <enum>QLayout::SizeConstraint::SetFixedSize</enum>
       </property>
       <property name="horizontalSpacing">
-       <number>0</number>
+       <number>-1</number>
       </property>
       <item row="3" column="1">
        <widget class="QComboBox" name="JoyAddCreditKey">
