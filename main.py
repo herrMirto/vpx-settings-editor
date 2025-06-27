@@ -1,5 +1,6 @@
 # This Python file uses the following encoding: utf-8
 import os
+import json
 import sys
 import re
 import subprocess
@@ -34,10 +35,7 @@ from ui_helpers.setup_windowed_resolutions import setup_aspect_ratio_logic, get_
 from ui_helpers.video_resolutions import get_display_resolutions, load_playfield_resolution
 from ui_helpers.widget_option_manager import change_color
 from tables_utils import (
-    load_tables_index,
-    load_patch_hashes,
-    scan_tables,
-    save_tables_index,
+    build_tables_meta,
     ensure_vpsdb,
 )
 
@@ -329,12 +327,23 @@ class Widget(QWidget):
         self.screens_setup_window.show()
 
     # ----- Tables Tab Logic -----
+    def load_tables_meta(self):
+        try:
+            with open("/Users/andremichi/.vpx_settings_editor/tables_meta.json", "r", encoding="utf-8") as f:
+                return json.load(f).get("tables", {})
+        except Exception as e:
+            logger.error(f"Failed to load tables_meta.json: {e}")
+            return {}
+    
     def setup_tables_tab(self):
         self.tables_tab = QWidget()
         layout = QVBoxLayout(self.tables_tab)
         self.tables_table = QTableWidget()
-        self.tables_table.setColumnCount(4)
-        self.tables_table.setHorizontalHeaderLabels(["Table", "SHA256", "VPS ID", "Standalone Patch"])
+        self.tables_table.setColumnCount(12)
+        self.tables_table.setHorizontalHeaderLabels([
+            "Table", "VPS ID", "Standalone Patch", "Action",  # já existentes
+            "ROM", "NFozzy", "LUT", "Scorebit", "Fleep", "SSF", "FastFlips", "FlexDMD"
+        ])
         layout.addWidget(self.tables_table)
         self.rescan_button = QPushButton("Re-scan Tables")
         self.rescan_button.clicked.connect(self.rescan_tables)
@@ -342,56 +351,87 @@ class Widget(QWidget):
         self.ui.tabWidget.addTab(self.tables_tab, "Tables")
         self.load_tables()
 
-    def load_tables(self):
-        tables, ids, scripts, _, patched, ts = load_tables_index()
-        db_entries, ts = ensure_vpsdb(ts)
-        if not tables:
-            tables, ids, scripts, vbs_files = scan_tables(db_entries)
-            patched = {}
-            save_tables_index(tables, ids, scripts, vbs_files, patched, ts)
-        self.populate_tables(tables, ids, scripts, patched)
 
-    def populate_tables(self, tables, ids, scripts, patched):
+    def load_tables(self):
+        self.table_meta = self.load_tables_meta()
+
+        if not self.table_meta:
+            logger.info("tables_meta.json not found or empty. Rebuilding...")
+            _, ts = ensure_vpsdb()
+            db_entries, ts = ensure_vpsdb(ts)
+            build_tables_meta(db_entries)
+            self.table_meta = self.load_tables_meta()
+
+        self.populate_tables()
+
+    def populate_tables(self):
         self.tables_table.setRowCount(0)
-        self.patch_map = load_patch_hashes()
-        for row, (path, digest) in enumerate(sorted(tables.items())):
+        for row, (name, info) in enumerate(sorted(self.table_meta.items())):
             self.tables_table.insertRow(row)
-            self.tables_table.setItem(row, 0, QTableWidgetItem(os.path.basename(path)))
-            self.tables_table.setItem(row, 1, QTableWidgetItem(digest))
-            self.tables_table.setItem(row, 2, QTableWidgetItem(ids.get(path, "")))
-            patch_widget = QTableWidgetItem("")
-            script_hash = scripts.get(path)
-            patch_url = None
-            if script_hash:
-                patch_script = self.patch_map.get(script_hash)
-                if patch_script and patched.get(path) != "yes":
-                    patch_url = patch_script
-            if patch_url:
-                btn = QPushButton("Apply Patch")
-                btn.clicked.connect(lambda _, p=path, u=patch_url: self.apply_patch(p, u, patched))
-                self.tables_table.setCellWidget(row, 3, btn)
+            self.tables_table.setItem(row, 0, QTableWidgetItem(name))
+            self.tables_table.setItem(row, 1, QTableWidgetItem(info.get("vps_id", "")))
+    
+            patch_status = "Patched" if info.get("vbs_patch_applied") == "yes" else (
+                "Needs Patch" if info.get("vbs_patch") == "yes" else "N/A"
+            )
+            self.tables_table.setItem(row, 2, QTableWidgetItem(patch_status))
+    
+            if info.get("vbs_patch") == "yes" and info.get("vbs_patch_applied") != "yes":
+                patch_entry = self.get_patch_entry(info.get("vbs_sha256"))
+                if patch_entry:
+                    btn = QPushButton("Apply Patch")
+                    btn.clicked.connect(lambda _, i=info, u=patch_entry["url"]: self.apply_patch(i, u))
+                    self.tables_table.setCellWidget(row, 3, btn)
+                else:
+                    self.tables_table.setItem(row, 3, QTableWidgetItem(""))
             else:
-                self.tables_table.setItem(row, 3, QTableWidgetItem("Patched" if patched.get(path)=="yes" else ""))
+                self.tables_table.setItem(row, 3, QTableWidgetItem(""))
+    
+            # Colunas extras
+            extras = [
+                "rom", "detectNfozzy", "detectLut", "detectScorebit",
+                "detectFleep", "detectSSF", "detectFastflips", "detectFlex"
+            ]
+            for col_offset, key in enumerate(extras, start=4):
+                val = info.get(key, "")
+                if val == "true":
+                    val = "✅"
+                elif val == "false":
+                    val = "❌"
+                self.tables_table.setItem(row, col_offset, QTableWidgetItem(val))
+
+    def get_patch_url(self, sha256):
+        from tables_utils import load_patch_hashes
+        patch_map = load_patch_hashes()
+        return patch_map.get(sha256)
 
     def rescan_tables(self):
-        _, _, _, _, patched, ts = load_tables_index()
+        _, ts = ensure_vpsdb()
         db_entries, ts = ensure_vpsdb(ts)
-        tables, ids, scripts, vbs_files = scan_tables(db_entries)
-        save_tables_index(tables, ids, scripts, vbs_files, patched, ts)
-        self.populate_tables(tables, ids, scripts, patched)
+        build_tables_meta(db_entries)  # Isso recria tables_meta.json
+        self.load_tables()
+    
+    def get_patch_entry(self, sha256):
+        from tables_utils import load_patch_hashes
+        patch_map = load_patch_hashes()
+        return patch_map.get(sha256)
 
-    def apply_patch(self, table_path, patch_url, patched_map):
+    def apply_patch(self, table_info, patch_url):
         try:
             data = urlopen(patch_url).read()
             parsed = urlparse(patch_url)
-            dest = os.path.join(
-                os.path.dirname(table_path), os.path.basename(parsed.path)
-            )
+            dest = os.path.join(os.path.dirname(table_info["path"]), os.path.basename(parsed.path))
             with open(dest, "wb") as f:
                 f.write(data)
-            patched_map[table_path] = "yes"
-            tables, ids, scripts, vbs_files, _, ts = load_tables_index()
-            save_tables_index(tables, ids, scripts, vbs_files, patched_map, ts)
+
+            # Atualiza tables_meta.json em memória
+            name = os.path.basename(table_info["path"])
+            self.table_meta[name]["vbs_patch_applied"] = "yes"
+
+            # Salva novamente
+            with open("/Users/andremichi/.vpx_settings_editor/tables_meta.json", "w", encoding="utf-8") as f:
+                json.dump({"tables": self.table_meta}, f, indent=2, ensure_ascii=False)
+
             self.load_tables()
         except Exception as e:
             logger.error(f"Failed to apply patch: {e}")

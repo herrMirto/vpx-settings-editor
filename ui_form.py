@@ -4786,7 +4786,7 @@ class Ui_Widget(object):
 
         self.retranslateUi(Widget)
 
-        self.tabWidget.setCurrentIndex(3)
+        self.tabWidget.setCurrentIndex(1)
         self.ButtonSaveAudioOptions.setDefault(True)
         self.ButtonSaveVideoOptions.setDefault(True)
         self.video_opts_widget.setCurrentIndex(0)
