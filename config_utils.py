@@ -10,7 +10,6 @@ DEFAULT_CONFIG = """
 vpx_ini_path = /path/to/VPinballX.ini
 vpx_binary_path = /path/to/VPinballX_GL or /path/to/VPinballX_BGFX
 tables_path = /path/to/vpx/tables
-vpxtool_path = /path/to/vpxtool
 """
 
 def load_config():
@@ -43,15 +42,15 @@ def validate_config():
             show_config_error("Missing section [Paths] in the configuration file.")
 
         # Check mandatory keys
-        mandatory = {"vpx_ini_path", "vpx_binary_path", "tables_path", "vpxtool_path"}
+        mandatory = {"vpx_ini_path", "vpx_binary_path", "tables_path" }
         if not mandatory.issubset(config["Paths"].keys()):
-            show_config_error("Missing mandatory keys 'vpx_ini_path', 'vpx_binary_path', 'tables_path' or 'vpxtool_path' in the configuration file.")
+            show_config_error("Missing mandatory keys 'vpx_ini_path', 'vpx_binary_path', 'tables_path' in the configuration file.")
 
         # Check if the files exist
         ini_path = config["Paths"]["vpx_ini_path"]
         binary_path = config["Paths"]["vpx_binary_path"]
         tables_path = config["Paths"]["tables_path"]
-        vpxtool_path = config["Paths"]["vpxtool_path"]
+        
 
         missing = []
         if not os.path.isfile(ini_path):
@@ -60,29 +59,24 @@ def validate_config():
             missing.append(binary_path)
         if not os.path.isdir(tables_path):
             missing.append(tables_path)
-        if not os.path.isfile(vpxtool_path):
-            missing.append(vpxtool_path)
 
         if missing:
             show_missing_files_error(missing)
 
-        return ini_path, binary_path, tables_path, vpxtool_path
+        return ini_path, binary_path, tables_path
 
     except Exception as e:
         show_config_error(f"Error while reading configuration")
 
 def get_vpx_ini_path():
-    ini_path, _, _, _ = validate_config()
+    ini_path, _, _ = validate_config()
     return ini_path
 
 def get_vpx_binary_path():
-    _, binary_path, _, _ = validate_config()
+    _, binary_path, _ = validate_config()
     return binary_path
 
 def get_tables_path():
-    _, _, tables_path, _ = validate_config()
+    _, _, tables_path = validate_config()
     return tables_path
 
-def get_vpxtool_path():
-    _, _, _, vpxtool_path = validate_config()
-    return vpxtool_path
